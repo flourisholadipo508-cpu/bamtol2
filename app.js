@@ -17,9 +17,7 @@ const storeData = {
 
 // Automated Cloud Pipeline Fetcher
 async function fetchCloudInventory() {
-    const url = `https://contentful.com${SPACE_ID}/environments/master/entries?access_token=${ACCESS_TOKEN}&content_type=boutiqueItem&include=2`;
-    try {
-        const res = await fetch(url);
+    const url = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master/entries?access_token=${ACCESS_TOKEN}&content_type=boutiqueItem&include=2`;
         const json = await res.json();
         if (json.items) { processContentfulData(json); }
     } catch (err) { console.error("Cloud Connection Error:", err); }
@@ -45,7 +43,9 @@ function processContentfulData(data) {
         if (storeData[targetCategory]) {
             storeData[targetCategory].items.push({
                 name: fields.name || "Boutique Essential", desc: fields.desc || "", price: Number(fields.price || 0),
-                r1: fields.filterProfile || "All", r2: fields.filterStyle || "All", hash: fields.searchHashtags || [], imageFile: imageUrl, deal: fields.isSpecialDeal || false
+                r1: fields.filterProfile || "All", r2: (fields.filterStyle || "All").trim(), hash: fields.searchHashtags
+    ? fields.searchHashtags.split(",").map(tag => tag.trim())
+    : [], imageFile: imageUrl, deal: fields.isSpecialDeal || false
             });
         }
     });
@@ -160,10 +160,12 @@ function renderCatalogItems() {
                     <h3 class="product-title">${item.name}</h3><p class="product-desc">${item.desc}</p>
                     <div class="product-tags-display">${hashHTML}</div><p class="product-price">${formatPrice(item.price)}</p>
                 </div>
-                <a href="https://wa.me{waText}" target="_blank" class="order-whatsapp-btn">Order on WhatsApp</a>
+               <a href="https://wa.me/2347068868480?text=${waText}" target="_blank" class="order-whatsapp-btn">Order on WhatsApp</a>
             </div>`;
     });
 }
+
+console.log("Store Data:", storeData);
 
 function renderHomeDeals() {
     const target = document.getElementById('deals-display');
@@ -182,7 +184,7 @@ function renderHomeDeals() {
                         <h3 class="product-title">${item.name}</h3><p class="product-desc">${item.desc}</p>
                         <p class="product-price" style="background-color:#d4af37; color:#111;">${formatPrice(item.price)}</p>
                     </div>
-                    <a href="https://wa.me{waText}" target="_blank" class="order-whatsapp-btn">Claim Deal on WhatsApp</a>
+                   <a href="https://wa.me/2347068868480?text=${waText}" target="_blank" class="order-whatsapp-btn">Claim Deal on WhatsApp</a>
                 </div>`;
         });
     });
